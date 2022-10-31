@@ -1,0 +1,24 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+.grid{
+    margin: 20px;
+    border: 5px solid black;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    width: min-content;
+}
+.square_9{
+    border: 1px solid black;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    width: min-content;
+}
+.square_1{
+    border: 1px solid black;
+    width: 30px;
+    height: 30px;
+    margin-right: 0px;
+    text-align: center;
+    padding: 0px;
+}
