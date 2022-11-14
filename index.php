@@ -1,3 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Sudoku</title>
+</head>
+
 <?php
 class grid{
     public $list;
@@ -6,6 +16,20 @@ class grid{
     private $undo_coord;
     private $undo_recentMove;
     private $undo = FALSE;
+
+    function setup_list_empty() {
+        $this->list = array(
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0),
+            array(0,0,0,0,0,0,0,0,0)
+        );
+    }
 
     function setup_list() {
         $this->list = array(
@@ -129,20 +153,24 @@ class grid{
         $this->setup_list();
         $stop = FALSE;
         while ($stop == FALSE) {
-            $this->set_value(rand(1,9), rand(1,9), rand(1,9));
             $big_pos = rand(1,9);
             $small_pos = rand(1,9);
+            $val = rand(1,9);
+            // test if possible
+            $box = $this->get_square($big_pos,$small_pos);
+            $row = $this->get_row($big_pos,$small_pos);
+            $column = $this->get_column($big_pos,$small_pos);
+            $allvalues = array_merge($box,$row);
+            $allvalues = array_merge($allvalues,$column);
+            if (!in_array($val, $allvalues)) {
+                $this->set_value($big_pos,$small_pos,$val);
+                // TRY TO SOLVE
+            }
         }
     }
     function solve() {
-        // I suspect there are multiple ways to solve this, my prelimenary method will be to, for each empty sqare find a list of every possible number
         $stop = FALSE;
         while ($stop == FALSE) {
-            // Do it in itterations, I may be able to make this more effecient
-            //$large_posibilities = array();
-
-
-            // ! NEW CODE IDEA
             // To get it working just keep running the for loop until one thing is found then go again
             // Later for optimizarion I can do find one then spread out and find others etc. etc.
 
@@ -205,57 +233,72 @@ function createHTMLfromGrid($grid){
     $html .= "</div>";
     return $html;
 }
+function createHTMLform(){
+    $html = "<form method=\"post\" action=\"./index.php\">";
+    $html .= "<div class=\"grid\">";
+    for ($i = 0; $i < 9; $i++) {
+        $html .= "<div class=\"square_9\">";
+        for ($j=0; $j < 9; $j++) {
+            $html .= "<input type=\"text\" id=\"".$i.$j."\" name=\"".$i.$j."\" class=\"square_1\" maxlength=\"1\"></input>";
+        }
+        $html .= "</div>";
+    }
+    $html .= "</div>";
+    $html .= "<input type=\"submit\" value=\"Submit\">";
+    $html .= "</form>";
+    return $html;
+}
+function getGridFromForm(){
+    $grid = new Grid();
+    $grid->setup_list_empty();
+    for ($i = 0; $i < 9; $i++) {
+        for ($j=0; $j < 9; $j++) {
+            $value = $_POST[$i.$j];
+            //echo("[(".$i.",".$j.") ".$value."]");
+            if($value != ""){
+                $grid->set_value($i+1,$j+1,$value);
+            }
+        }
+    }
+    return $grid;
+}
 
-// ! NEW TESTING
-$grid = new Grid();
-$grid->setup_list_2();
-$output = createHTMLfromGrid($grid);
-$output .= "<br>";
-$grid->solve();
-$output .= createHTMLfromGrid($grid);
+// scripts to solve an inputed gird
+
+if(isset($_POST["00"])){
+    echo("1");
+    $grid = getGridFromForm();
+    echo("2");
+    echo(createHTMLfromGrid($grid));
+    echo("2b");
+    $grid->solve();
+    echo("3");
+    $html = createHTMLfromGrid($grid);
+    echo("4");
+}else{
+    $html = createHTMLform();
+}
+
+
+
+
+
+// NOTE unused because of file imports
+// $grid = new Grid();
+// $grid->setup_list_2();
+// $output = createHTMLfromGrid($grid);
+// $output .= "<br>";
+// $grid->solve();
+// $output .= createHTMLfromGrid($grid);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-* {
-    font-family: Arial, Helvetica, sans-serif;
-}
-.grid{
-    margin: 20px;
-    border: 5px solid black;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    width: min-content;
-}
-.square_9{
-    border: 1px solid black;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    width: min-content;
-}
-.square_1{
-    border: 1px solid black;
-    width: 30px;
-    height: 30px;
-    margin-right: 0px;
-    text-align: center;
-    padding: 0px;
-}
 
-</style>
-    <title>Sudoku</title>
-</head>
 <body>
     <header>
         <h1>Sudoku</h1>
     </header>
     <main>
 
-        <?php echo($output); ?>
+        <?php echo($html); ?>
 
     </main>
 </body>
