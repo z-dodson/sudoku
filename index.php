@@ -125,11 +125,14 @@ class grid{
     function get_square($large_box,$small_box){
         // Seems kind of unessacery as its so easy but for code completnesss/neatness i'll do it anyway
         $toreturn = array();
-        foreach($this->list[$i] as $square){
+        foreach($this->list[$large_box-1] as $square){
             if ($square != 0) {
                 array_push($toreturn, $square);
             }
         }
+        // echo(" ***");
+        // print_r($toreturn);
+        // echo("*** ");
         return $toreturn;
     }
 
@@ -168,7 +171,12 @@ class grid{
             }
         }
     }
-    function solve() {
+    function solve(){
+        return $this->solve_backtrackingAlgotihm();
+        //return $this->solve_1possibilityAlgorithm();
+
+    }
+    function solve_1possibilityAlgorithm() {
         $stop = FALSE;
         while ($stop == FALSE) {
             // To get it working just keep running the for loop until one thing is found then go again
@@ -214,6 +222,66 @@ class grid{
                 }
             }
         }
+    }
+    function private_recursive_solve($large_pos, $small_pos) {
+        if($large_pos==10){
+            return TRUE;
+        }
+        if($small_pos==9){
+            $new_small_pos = 1;
+            $new_large_pos = $large_pos+1;
+        }else{
+            $new_large_pos = $large_pos;
+            $new_small_pos= $small_pos+1;
+        }
+        $impossible = array();
+        //print_r($impossible);
+        //  Squares
+        $square = $this->get_square($large_pos,$small_pos);
+        $impossible = array_merge($impossible,$square);
+        //print_r($impossible);
+        //  Rows
+        $row = $this->get_row($large_pos,$small_pos);
+        $impossible = array_merge($impossible,$row);
+        //print_r($impossible);
+        //  Columns
+        $column = $this->get_column($large_pos,$small_pos);
+        $impossible = array_merge($impossible,$column);
+        //print_r($impossible);
+        // Create a combined list
+        $impossible = array_values(array_unique($impossible));
+        //print_r($impossible);
+        if($this->get_value($large_pos,$small_pos)==0){
+            if(count($impossible)==9){
+                return FALSE;// maybe
+            }else{
+                for($i=1; $i<=9; $i++){
+                    //echo($i);
+                    if(!in_array($i, $impossible)){
+                        $this->set_value($large_pos, $small_pos,$i);
+                        //echo("[(".$large_pos.",".$small_pos.") ->".$i."]<br>");
+                        //print_r($impossible);
+                        //echo("<br>");
+                        $result = $this->private_recursive_solve($new_large_pos, $new_small_pos);
+                        if ($result==TRUE){
+                            //echo("TRUE<br>");
+                            return TRUE;
+                            
+                        }else{
+                            $this->set_value($large_pos, $small_pos,0);
+                            // go arroud again
+                        }
+                    }//endif
+                }
+                //echo("ERROR<br>");
+            }
+        }elseif($this->get_value($large_pos,$small_pos)!=0){
+            // ELSE
+            return $this->private_recursive_solve($new_large_pos,$new_small_pos);
+        }
+    }
+    function solve_backtrackingAlgotihm() {
+        $this->private_recursive_solve(1,1);
     }
 }
 function createHTMLfromGrid($grid){
@@ -266,15 +334,9 @@ function getGridFromForm(){
 // scripts to solve an inputed gird
 
 if(isset($_POST["00"])){
-    echo("1");
     $grid = getGridFromForm();
-    echo("2");
-    echo(createHTMLfromGrid($grid));
-    echo("2b");
     $grid->solve();
-    echo("3");
     $html = createHTMLfromGrid($grid);
-    echo("4");
 }else{
     $html = createHTMLform();
 }
@@ -294,7 +356,7 @@ if(isset($_POST["00"])){
 
 <body>
     <header>
-        <h1>Sudoku</h1>
+        <h1>Sudoku solver</h1>
     </header>
     <main>
 
